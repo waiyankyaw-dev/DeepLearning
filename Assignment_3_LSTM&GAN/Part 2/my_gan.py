@@ -9,15 +9,15 @@ from torchvision.utils import save_image
 from torchvision import datasets
 from torch.utils.data import DataLoader
 
-# Handle device selection
+# handle device selection
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 class Generator(nn.Module):
     def __init__(self, latent_dim):
         super(Generator, self).__init__()
 
-        # Construct generator based on the hint
-        # We use nn.Sequential for clean layering
+        # construct generator based on the hint
+        # we use nn.Sequential for clean layering
         self.model = nn.Sequential(
             # Linear args.latent_dim -> 128
             nn.Linear(latent_dim, 128),
@@ -47,7 +47,7 @@ class Generator(nn.Module):
 
     def forward(self, z):
         img_flat = self.model(z)
-        # Reshape to (Batch, Channel, Height, Width)
+        # reshape to (Batch, Channel, Height, Width)
         img = img_flat.view(img_flat.size(0), 1, 28, 28)
         return img
 
@@ -82,7 +82,7 @@ def train(dataloader, discriminator, generator, optimizer_G, optimizer_D, args):
     # Loss function
     adversarial_loss = torch.nn.BCELoss()
 
-    # Move to device
+    # move to device
     generator.to(device)
     discriminator.to(device)
     adversarial_loss.to(device)
@@ -109,11 +109,11 @@ def train(dataloader, discriminator, generator, optimizer_G, optimizer_D, args):
             # Sample noise as generator input
             z = torch.randn(batch_size, args.latent_dim).to(device)
 
-            # Generate a batch of images
+            # generate a batch of images
             gen_imgs = generator(z)
 
             # Loss measures generator's ability to fool the discriminator
-            # We want D(G(z)) to be 1 (valid)
+            # we want D(G(z)) to be 1 (valid)
             g_loss = adversarial_loss(discriminator(gen_imgs), valid)
 
             g_loss.backward()
@@ -124,7 +124,7 @@ def train(dataloader, discriminator, generator, optimizer_G, optimizer_D, args):
             # ---------------------
             optimizer_D.zero_grad()
 
-            # Measure discriminator's ability to classify real from generated samples
+            # measure discriminator's ability to classify real from generated samples
             real_loss = adversarial_loss(discriminator(real_imgs), valid)
             fake_loss = adversarial_loss(discriminator(gen_imgs.detach()), fake)
             d_loss = (real_loss + fake_loss) / 2
@@ -140,7 +140,7 @@ def train(dataloader, discriminator, generator, optimizer_G, optimizer_D, args):
             if i % 100 == 0:
                 print(f"[Epoch {epoch}/{args.n_epochs}] [Batch {i}/{len(dataloader)}] [D loss: {d_loss.item():.4f}] [G loss: {g_loss.item():.4f}]")
 
-            # Save Images Logic for Task 2
+            # save Images Logic for Task 2
             # 1. Start of training
             if batches_done == 0:
                 save_image(gen_imgs[:25], 'images/task2_start.png', nrow=5, normalize=True)
@@ -161,9 +161,6 @@ def interpolate_task3(generator, latent_dim):
     print("Running Task 3 Interpolation...")
     generator.eval() # Set to evaluation mode
     
-    # We need to find two different classes. Since G is unsupervised, 
-    # we generate a few random ones and let the user visually confirm,
-    # or just pick two random vectors which are highly likely to be different.
     
     z1 = torch.randn(1, latent_dim).to(device)
     z2 = torch.randn(1, latent_dim).to(device)
@@ -176,7 +173,7 @@ def interpolate_task3(generator, latent_dim):
         z_interp = (1 - alpha) * z1 + alpha * z2
         z_interp_list.append(z_interp)
         
-    # Stack into a single batch tensor
+    # stack into a single batch tensor
     z_batch = torch.cat(z_interp_list, dim=0) # Shape: (9, 100)
     
     with torch.no_grad():
@@ -187,7 +184,7 @@ def interpolate_task3(generator, latent_dim):
 
 
 def main():
-    # Create output image directory
+    # create output image directory
     os.makedirs('images', exist_ok=True)
 
     # load data
@@ -199,21 +196,21 @@ def main():
                        ])),
         batch_size=args.batch_size, shuffle=True)
 
-    # Initialize models and optimizers
+    # initialize models and optimizers
     generator = Generator(args.latent_dim)
     discriminator = Discriminator()
     
-    # Adam usually works better with beta1=0.5 for GANs
+    # adam usually works better with beta1=0.5 for GANs
     optimizer_G = torch.optim.Adam(generator.parameters(), lr=args.lr, betas=(0.5, 0.999))
     optimizer_D = torch.optim.Adam(discriminator.parameters(), lr=args.lr, betas=(0.5, 0.999))
 
-    # Start training
+    # start training
     train(dataloader, discriminator, generator, optimizer_G, optimizer_D, args)
 
-    # Save model
+    # save model
     torch.save(generator.state_dict(), "mnist_generator.pt")
 
-    # Perform Task 3
+    # perform Task 3
     interpolate_task3(generator, args.latent_dim)
 
 
