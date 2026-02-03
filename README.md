@@ -4,6 +4,16 @@ This repository contains the implementations of three major assignments for the 
 
 ---
 
+## Assignments Requirements
+
+##### Assignment 1 Requirements -  [Assignment_1.pdf](docs\Assignment_1.pdf) 
+
+**Assignment 2 Requirements -**  [Assignment_2.pdf](docs\Assignment_2.pdf) 
+
+**Assignment 3 Requirements -**  [Assignment3.pdf](docs\Assignment3.pdf) 
+
+---
+
 ## 📚 Project Overview
 
 ### **Assignment 1: The Perceptron & NumPy MLP**
